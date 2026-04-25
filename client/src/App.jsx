@@ -6,7 +6,9 @@ import Layout from './components/Layout';
 import useSettings from './hooks/useSettings';
 import useConversations from './hooks/useConversations';
 import useModels from './hooks/useModels';
-import './db';
+import useOnlineStatus from './hooks/useOnlineStatus';
+import { drain } from './utils/offlineQueue';
+import db from './db';
 
 export default function App() {
   const { settings, set } = useSettings();
@@ -43,13 +45,41 @@ export default function App() {
 function AppContent({ onToggleTheme, themeMode, conversationsState, modelsState, defaultModel }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const online = useOnlineStatus();
 
   const match = location.pathname.match(/^\/c\/(\d+)$/);
   const activeId = match ? Number(match[1]) : null;
 
-  // Current model: use the active conversation's model, or default
   const activeConversation = conversationsState.conversations.find((c) => c.id === activeId);
   const currentModel = activeConversation?.model || defaultModel;
+
+  // Flush offline queue when coming back online
+  useEffect(() => {
+    if (!online) return;
+    const queue = drain();
+    if (queue.length === 0) return;
+
+    for (const item of queue) {
+      db.messages.add({
+        conversationId: item.conversationId,
+        role: 'user',
+        content: item.content,
+        reasoningContent: '',
+        createdAt: new Date().toISOString(),
+        tokenCount: 0,
+        isEdited: false,
+        originalContent: '',
+      });
+      db.conversations.update(item.conversationId, {
+        updatedAt: new Date().toISOString(),
+      });
+    }
+    // If the current view matches a queued conversation, navigate to trigger re-render
+    const lastQueued = queue[queue.length - 1];
+    if (lastQueued) {
+      navigate(`/c/${lastQueued.conversationId}`, { replace: true });
+    }
+  }, [online, navigate]);
 
   const handleNewConversation = useCallback(async () => {
     const id = await conversationsState.create(currentModel || defaultModel);

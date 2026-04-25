@@ -25,7 +25,9 @@ router.post('/', requestLock, async (req, res) => {
       try { errJson = JSON.parse(errBody); } catch { errJson = null; }
 
       if (upstream.status === 429) {
-        throw new ApiError(429, 'rate_limit', errJson?.error?.message || 'Rate limit exceeded');
+        const retryAfter = upstream.headers.get('retry-after');
+        const retrySec = retryAfter ? parseInt(retryAfter, 10) : undefined;
+        throw new ApiError(429, 'rate_limit', errJson?.error?.message || '请求过于频繁，请稍后再试', retrySec && !isNaN(retrySec) ? retrySec : undefined);
       }
       if (upstream.status === 401 || upstream.status === 403) {
         throw new ApiError(upstream.status, 'auth', 'Invalid API key. Check server configuration.');

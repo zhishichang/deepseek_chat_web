@@ -5,19 +5,20 @@ import IconButton from '@mui/material/IconButton';
 import SendIcon from '@mui/icons-material/Send';
 import StopIcon from '@mui/icons-material/Stop';
 
-export default function MessageInput({ onSend, isGenerating, onStop }) {
+export default function MessageInput({ onSend, isGenerating, onStop, disabled }) {
   const [input, setInput] = useState('');
   const inputRef = useRef(null);
+  const composingRef = useRef(false);
 
   const handleSend = () => {
-    if (!input.trim() || isGenerating) return;
+    if (!input.trim() || isGenerating || disabled) return;
     onSend(input);
     setInput('');
     inputRef.current?.focus();
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !composingRef.current) {
       e.preventDefault();
       handleSend();
     }
@@ -32,11 +33,13 @@ export default function MessageInput({ onSend, isGenerating, onStop }) {
           minRows={1}
           maxRows={4}
           fullWidth
-          placeholder="输入消息..."
+          placeholder={disabled ? '网络不可用...' : '输入消息...'}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          disabled={isGenerating}
+          onCompositionStart={() => { composingRef.current = true; }}
+          onCompositionEnd={() => { composingRef.current = false; }}
+          disabled={isGenerating || disabled}
           size="small"
         />
         {isGenerating ? (
@@ -47,7 +50,7 @@ export default function MessageInput({ onSend, isGenerating, onStop }) {
           <IconButton
             color="primary"
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || disabled}
             title="发送"
           >
             <SendIcon />

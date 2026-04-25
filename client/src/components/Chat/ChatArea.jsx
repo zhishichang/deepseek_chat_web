@@ -7,6 +7,8 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TokenUsageBar from './TokenUsageBar';
@@ -17,6 +19,8 @@ import useTokenCount from '../../hooks/useTokenCount';
 import db from '../../db';
 import { exportAsMarkdown, exportAsJSON, downloadFile } from '../../utils/export';
 import IosShareIcon from '@mui/icons-material/IosShare';
+import ReplayIcon from '@mui/icons-material/Replay';
+import WifiOffIcon from '@mui/icons-material/WifiOff';
 
 export default function ChatArea({ activeId, models, themeMode, onThemeChange }) {
   const {
@@ -25,9 +29,12 @@ export default function ChatArea({ activeId, models, themeMode, onThemeChange })
     streamingReasoning,
     isGenerating,
     error,
+    retryAfter,
+    online,
     sendMessage,
     stop,
     regenerate,
+    retryLast,
     editMessage,
     lastUsage,
   } = useChat(activeId);
@@ -94,7 +101,17 @@ export default function ChatArea({ activeId, models, themeMode, onThemeChange })
         bgcolor: 'background.default',
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, py: 0.5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', px: 2, py: 0.5, gap: 0.5 }}>
+        {!online && (
+          <Chip
+            icon={<WifiOffIcon />}
+            label="离线"
+            color="warning"
+            size="small"
+            variant="outlined"
+          />
+        )}
+        <Box sx={{ flex: 1 }} />
         <SettingsDialog
           settings={settings}
           models={models}
@@ -121,8 +138,25 @@ export default function ChatArea({ activeId, models, themeMode, onThemeChange })
       <TokenUsageBar tokenCount={tokenCount} />
 
       {error && (
-        <Alert severity="error" sx={{ mx: 2 }}>
+        <Alert
+          severity="error"
+          sx={{ mx: 2, alignItems: 'center' }}
+          action={
+            retryLast ? (
+              <Button
+                color="error"
+                size="small"
+                startIcon={<ReplayIcon />}
+                onClick={retryLast}
+                disabled={isGenerating || !online}
+              >
+                重试
+              </Button>
+            ) : undefined
+          }
+        >
           {error}
+          {retryAfter && `（${retryAfter}秒后可重试）`}
         </Alert>
       )}
 
@@ -140,6 +174,7 @@ export default function ChatArea({ activeId, models, themeMode, onThemeChange })
         onSend={sendMessage}
         isGenerating={isGenerating}
         onStop={stop}
+        disabled={!online}
       />
 
       <Snackbar

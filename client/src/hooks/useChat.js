@@ -3,16 +3,21 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import db from '../db';
 import useSettings from './useSettings';
 import useStreaming from './useStreaming';
+import useOnlineStatus from './useOnlineStatus';
+import { enqueue, drain } from '../utils/offlineQueue';
 
 export default function useChat(conversationId) {
   const { settings } = useSettings();
   const { startStream, stopStream } = useStreaming();
+  const online = useOnlineStatus();
   const [streamingContent, setStreamingContent] = useState('');
   const [streamingReasoning, setStreamingReasoning] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
+  const [retryAfter, setRetryAfter] = useState(null);
   const [lastUsage, setLastUsage] = useState(null);
   const usageRef = useRef(null);
+  const lastUserContentRef = useRef(null);
 
   const messages = useLiveQuery(
     () => {
@@ -26,32 +31,32 @@ export default function useChat(conversationId) {
     []
   );
 
-  const sendMessage = useCallback(async (content) => {
+  const sendApiRequest = useCallback(async (content, { skipSave } = {}) => {
     if (!conversationId || !content.trim() || isGenerating) return;
 
     setError(null);
+    setRetryAfter(null);
     const now = new Date().toISOString();
 
-    // Save user message
-    await db.messages.add({
-      conversationId,
-      role: 'user',
-      content: content.trim(),
-      reasoningContent: '',
-      createdAt: now,
-      tokenCount: 0,
-      isEdited: false,
-      originalContent: '',
-    });
+    if (!skipSave) {
+      await db.messages.add({
+        conversationId,
+        role: 'user',
+        content: content.trim(),
+        reasoningContent: '',
+        createdAt: now,
+        tokenCount: 0,
+        isEdited: false,
+        originalContent: '',
+      });
+      await db.conversations.update(conversationId, { updatedAt: now });
+    }
 
-    // Update conversation updatedAt
-    await db.conversations.update(conversationId, { updatedAt: now });
+    lastUserContentRef.current = content.trim();
 
-    // Get conversation for model
     const conversation = await db.conversations.get(conversationId);
     const model = conversation?.model || settings.defaultModel;
 
-    // Build messages array for API
     const allMessages = await db.messages
       .where('conversationId')
       .equals(conversationId)
@@ -65,7 +70,6 @@ export default function useChat(conversationId) {
       apiMessages.push({ role: msg.role, content: msg.content });
     }
 
-    // Start streaming
     setIsGenerating(true);
     setStreamingContent('');
     setStreamingReasoning('');
@@ -83,13 +87,13 @@ export default function useChat(conversationId) {
         stream: settings.streamMode,
       },
       {
-        onDelta: (content, reasoning) => {
+        onDelta: (delta, reasoning) => {
           if (reasoning) {
             accumulatedReasoning += reasoning;
             setStreamingReasoning(accumulatedReasoning);
           }
-          if (content) {
-            accumulated += content;
+          if (delta) {
+            accumulated += delta;
             setStreamingContent(accumulated);
           }
         },
@@ -98,9 +102,8 @@ export default function useChat(conversationId) {
           setLastUsage(usage);
         },
         onDone: async () => {
-          // Save assistant message
           const assistantNow = new Date().toISOString();
-          const msgData = {
+          await db.messages.add({
             conversationId,
             role: 'assistant',
             content: accumulated,
@@ -109,8 +112,7 @@ export default function useChat(conversationId) {
             tokenCount: usageRef.current?.total_tokens || 0,
             isEdited: false,
             originalContent: '',
-          };
-          await db.messages.add(msgData);
+          });
           await db.conversations.update(conversationId, { updatedAt: assistantNow });
 
           setStreamingContent('');
@@ -118,14 +120,43 @@ export default function useChat(conversationId) {
           setIsGenerating(false);
         },
         onError: (err) => {
-          setError(err?.message || 'Unknown error');
+          const retry = err?.retryAfter;
+          setError(mapErrorMessage(err));
+          if (retry) setRetryAfter(retry);
           setIsGenerating(false);
         },
       }
     );
-  }, [conversationId, settings, startStream]);
+  }, [conversationId, settings, startStream, isGenerating]);
 
-  const stop = useCallback(() => {
+  const sendMessage = useCallback(async (content) => {
+    if (!online) {
+      if (conversationId) {
+        enqueue(conversationId, content);
+        setError('当前离线，消息将在恢复网络后自动发送');
+      }
+      return;
+    }
+    await sendApiRequest(content);
+  }, [online, sendApiRequest, conversationId]);
+
+  const retryLast = useCallback(async () => {
+    if (!lastUserContentRef.current) return;
+
+    // Delete the failed assistant message if it exists (empty content from error)
+    const allMsgs = await db.messages
+      .where('conversationId')
+      .equals(conversationId)
+      .sortBy('createdAt');
+    const lastAssistant = [...allMsgs].reverse().find((m) => m.role === 'assistant');
+    if (lastAssistant && !lastAssistant.content) {
+      await db.messages.delete(lastAssistant.id);
+    }
+
+    await sendApiRequest(lastUserContentRef.current, { skipSave: true });
+  }, [conversationId, sendApiRequest]);
+
+  const stop = useCallback(async () => {
     stopStream();
     setIsGenerating(false);
   }, [stopStream]);
@@ -133,7 +164,6 @@ export default function useChat(conversationId) {
   const regenerate = useCallback(async () => {
     if (!conversationId) return;
 
-    // Delete last assistant message
     const allMsgs = await db.messages
       .where('conversationId')
       .equals(conversationId)
@@ -144,12 +174,11 @@ export default function useChat(conversationId) {
       await db.messages.delete(lastAssistant.id);
     }
 
-    // Find last user message and resend
     const lastUser = [...allMsgs].reverse().find((m) => m.role === 'user');
     if (lastUser) {
-      await sendMessage(lastUser.content);
+      await sendApiRequest(lastUser.content, { skipSave: true });
     }
-  }, [conversationId, sendMessage]);
+  }, [conversationId, sendApiRequest]);
 
   const editMessage = useCallback(async (messageId, newContent) => {
     if (!conversationId || !newContent.trim()) return;
@@ -157,14 +186,12 @@ export default function useChat(conversationId) {
     const msg = await db.messages.get(messageId);
     if (!msg || msg.role !== 'user') return;
 
-    // Save original content and update
     await db.messages.update(messageId, {
       content: newContent.trim(),
       isEdited: true,
       originalContent: msg.originalContent || msg.content,
     });
 
-    // Delete all messages after this one in the conversation
     const allMsgs = await db.messages
       .where('conversationId')
       .equals(conversationId)
@@ -175,9 +202,8 @@ export default function useChat(conversationId) {
       await db.messages.bulkDelete(msgsToDelete.map((m) => m.id));
     }
 
-    // Resend with updated context
-    await sendMessage(newContent.trim());
-  }, [conversationId, sendMessage]);
+    await sendApiRequest(newContent.trim(), { skipSave: true });
+  }, [conversationId, sendApiRequest]);
 
   const deleteMessage = useCallback(async (messageId) => {
     await db.messages.delete(messageId);
@@ -189,11 +215,27 @@ export default function useChat(conversationId) {
     streamingReasoning,
     isGenerating,
     error,
+    retryAfter,
+    online,
     sendMessage,
     stop,
     regenerate,
+    retryLast,
     editMessage,
     deleteMessage,
     lastUsage,
   };
+}
+
+function mapErrorMessage(err) {
+  if (!err) return '未知错误';
+  const type = err.error;
+  const msg = err.message || '';
+
+  if (type === 'rate_limit') return '请求过于频繁，请稍后再试';
+  if (type === 'auth') return 'API 密钥无效，请检查服务器配置';
+  if (type === 'network') return '无法连接到 DeepSeek API，请检查网络';
+  if (type === 'server') return 'DeepSeek 服务暂时不可用，请稍后再试';
+  if (type === 'validation') return `请求参数错误：${msg}`;
+  return msg || '请求失败，请重试';
 }

@@ -7,16 +7,24 @@ export function errorHandler(err, req, res, _next) {
 
   const status = err.status || 500;
   const type = err.type || 'server';
-  res.status(status).json({
+
+  const body = {
     error: type,
     message: err.message || 'Internal server error',
-  });
+  };
+
+  if (err.retryAfter) {
+    body.retryAfter = err.retryAfter;
+  }
+
+  res.status(status).json(body);
 }
 
 export class ApiError extends Error {
-  constructor(status, type, message) {
+  constructor(status, type, message, retryAfter) {
     super(message);
     this.status = status;
     this.type = type;
+    this.retryAfter = retryAfter;
   }
 }
