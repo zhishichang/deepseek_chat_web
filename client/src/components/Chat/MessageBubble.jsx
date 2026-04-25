@@ -1,21 +1,51 @@
+import { useState } from 'react';
 import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import MarkdownRenderer from '../Markdown/MarkdownRenderer';
 import ThinkingBlock from '../Markdown/ThinkingBlock';
+import MessageActions from './MessageActions';
 
-export default function MessageBubble({ message, isStreaming, streamingContent, streamingReasoning }) {
+export default function MessageBubble({
+  message,
+  isStreaming,
+  streamingContent,
+  streamingReasoning,
+  isLastAssistant,
+  onCopy,
+  onEdit,
+  onRegenerate,
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState('');
+
   const isUser = message.role === 'user';
   const content = isStreaming ? streamingContent : message.content;
   const reasoningContent = isStreaming ? streamingReasoning : (message.reasoningContent || '');
 
+  const startEdit = () => {
+    setEditContent(message.content);
+    setEditing(true);
+  };
+
+  const submitEdit = () => {
+    if (editContent.trim() && editContent.trim() !== message.content) {
+      onEdit?.(message.id, editContent.trim());
+    }
+    setEditing(false);
+  };
+
   return (
     <Box
+      className="MessageBubble-root"
       sx={{
         display: 'flex',
         gap: 1.5,
         justifyContent: isUser ? 'flex-end' : 'flex-start',
         mb: 2,
+        position: 'relative',
       }}
     >
       {!isUser && (
@@ -23,39 +53,74 @@ export default function MessageBubble({ message, isStreaming, streamingContent, 
           <SmartToyIcon fontSize="small" color="primary" />
         </Box>
       )}
-      <Box
-        sx={{
-          maxWidth: '75%',
-          px: 2,
-          py: 1.5,
-          borderRadius: 2,
-          bgcolor: isUser ? 'primary.main' : 'background.paper',
-          color: isUser ? 'primary.contrastText' : 'text.primary',
-          border: isUser ? 'none' : 1,
-          borderColor: 'divider',
-          wordBreak: 'break-word',
-          '& p': { mt: 0, mb: 0.5 },
-        }}
-      >
-        {/* Thinking block for assistant messages */}
-        {!isUser && reasoningContent && (
-          <ThinkingBlock content={reasoningContent} streaming={isStreaming && !content} />
-        )}
+      <Box sx={{ maxWidth: '75%', position: 'relative' }}>
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            borderRadius: 2,
+            bgcolor: isUser ? 'primary.main' : 'background.paper',
+            color: isUser ? 'primary.contrastText' : 'text.primary',
+            border: isUser ? 'none' : 1,
+            borderColor: 'divider',
+            wordBreak: 'break-word',
+            '& p': { mt: 0, mb: 0.5 },
+          }}
+        >
+          {editing ? (
+            <>
+              <TextField
+                multiline
+                fullWidth
+                minRows={1}
+                maxRows={6}
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                size="small"
+                sx={{ mb: 1 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitEdit(); }
+                  if (e.key === 'Escape') setEditing(false);
+                }}
+              />
+              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                <Button size="small" onClick={() => setEditing(false)}>取消</Button>
+                <Button size="small" variant="contained" onClick={submitEdit}>保存并重新提交</Button>
+              </Box>
+            </>
+          ) : (
+            <>
+              {!isUser && reasoningContent && (
+                <ThinkingBlock content={reasoningContent} streaming={isStreaming && !content} />
+              )}
+              {isUser ? (
+                <Box sx={{ whiteSpace: 'pre-wrap' }}>{content}</Box>
+              ) : content ? (
+                <MarkdownRenderer content={content} />
+              ) : isStreaming ? null : (
+                '...'
+              )}
+              {isStreaming && content && (
+                <Box component="span" sx={{ display: 'inline-block', width: 8, height: 16, bgcolor: 'currentColor', opacity: 0.6, animation: 'blink 1s step-end infinite', verticalAlign: 'text-bottom', ml: 0.5 }} />
+              )}
+            </>
+          )}
+        </Box>
 
-        {/* Message content */}
-        {isUser ? (
-          <Box sx={{ whiteSpace: 'pre-wrap' }}>{content}</Box>
-        ) : content ? (
-          <MarkdownRenderer content={content} />
-        ) : isStreaming ? null : (
-          '...'
-        )}
-
-        {/* Streaming cursor */}
-        {isStreaming && content && (
-          <Box component="span" sx={{ display: 'inline-block', width: 8, height: 16, bgcolor: 'currentColor', opacity: 0.6, animation: 'blink 1s step-end infinite', verticalAlign: 'text-bottom', ml: 0.5 }} />
+        {/* Action buttons (hidden until hover) */}
+        {!editing && !isStreaming && (
+          <Box sx={{ position: 'absolute', top: -8, right: isUser ? 'auto' : -8, left: isUser ? -8 : 'auto' }}>
+            <MessageActions
+              message={message}
+              onCopy={onCopy}
+              onEdit={isUser ? startEdit : undefined}
+              onRegenerate={onRegenerate}
+              isLastAssistant={isLastAssistant}
+            />
+          </Box>
         )}
       </Box>
+
       {isUser && (
         <Box sx={{ flexShrink: 0, mt: 0.5 }}>
           <PersonIcon fontSize="small" color="action" />

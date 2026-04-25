@@ -1,12 +1,30 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import useChat from '../../hooks/useChat';
+import { useState } from 'react';
 
 export default function ChatArea({ activeId }) {
-  const { messages, streamingContent, streamingReasoning, isGenerating, error, sendMessage, stop } = useChat(activeId);
+  const {
+    messages,
+    streamingContent,
+    streamingReasoning,
+    isGenerating,
+    error,
+    sendMessage,
+    stop,
+    regenerate,
+    editMessage,
+  } = useChat(activeId);
+  const [snackbar, setSnackbar] = useState('');
+
+  const handleCopy = async (content) => {
+    await navigator.clipboard.writeText(content);
+    setSnackbar('已复制到剪贴板');
+  };
 
   if (!activeId) {
     return (
@@ -38,7 +56,7 @@ export default function ChatArea({ activeId }) {
       }}
     >
       {error && (
-        <Alert severity="error" onClose={() => {}} sx={{ mx: 2, mt: 1 }}>
+        <Alert severity="error" sx={{ mx: 2, mt: 1 }}>
           {error}
         </Alert>
       )}
@@ -48,12 +66,23 @@ export default function ChatArea({ activeId }) {
         streamingContent={streamingContent}
         streamingReasoning={streamingReasoning}
         isGenerating={isGenerating}
+        onCopy={handleCopy}
+        onEdit={editMessage}
+        onRegenerate={regenerate}
       />
 
       <MessageInput
         onSend={sendMessage}
         isGenerating={isGenerating}
         onStop={stop}
+      />
+
+      <Snackbar
+        open={Boolean(snackbar)}
+        autoHideDuration={2000}
+        onClose={() => setSnackbar('')}
+        message={snackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
     </Box>
   );

@@ -149,6 +149,38 @@ export default function useChat(conversationId) {
     }
   }, [conversationId, sendMessage]);
 
+  const editMessage = useCallback(async (messageId, newContent) => {
+    if (!conversationId || !newContent.trim()) return;
+
+    const msg = await db.messages.get(messageId);
+    if (!msg || msg.role !== 'user') return;
+
+    // Save original content and update
+    await db.messages.update(messageId, {
+      content: newContent.trim(),
+      isEdited: true,
+      originalContent: msg.originalContent || msg.content,
+    });
+
+    // Delete all messages after this one in the conversation
+    const allMsgs = await db.messages
+      .where('conversationId')
+      .equals(conversationId)
+      .sortBy('createdAt');
+
+    const msgsToDelete = allMsgs.filter((m) => m.createdAt > msg.createdAt);
+    if (msgsToDelete.length > 0) {
+      await db.messages.bulkDelete(msgsToDelete.map((m) => m.id));
+    }
+
+    // Resend with updated context
+    await sendMessage(newContent.trim());
+  }, [conversationId, sendMessage]);
+
+  const deleteMessage = useCallback(async (messageId) => {
+    await db.messages.delete(messageId);
+  }, []);
+
   return {
     messages: messages || [],
     streamingContent,
@@ -158,5 +190,7 @@ export default function useChat(conversationId) {
     sendMessage,
     stop,
     regenerate,
+    editMessage,
+    deleteMessage,
   };
 }
