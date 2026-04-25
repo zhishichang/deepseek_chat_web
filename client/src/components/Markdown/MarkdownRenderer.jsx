@@ -7,6 +7,7 @@ export default function MarkdownRenderer({ content }) {
   if (!content) return null;
 
   return (
+    <div style={{ overflowWrap: 'anywhere', maxWidth: '100%' }}>
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
@@ -64,5 +65,6 @@ export default function MarkdownRenderer({ content }) {
     >
       {content}
     </ReactMarkdown>
+    </div>
   );
 }

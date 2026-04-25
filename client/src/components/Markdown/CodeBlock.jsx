@@ -50,6 +50,8 @@ export default function CodeBlock({ className, children }) {
           overflow: 'auto',
           fontSize: 13,
           lineHeight: 1.5,
+          maxWidth: '100%',
+          boxSizing: 'border-box',
         }}
       >
         <code ref={codeRef} className={className}>

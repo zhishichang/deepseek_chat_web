@@ -51,7 +51,7 @@ export default function MessageList({
     : -1;
 
   return (
-    <Box ref={containerRef} sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+    <Box ref={containerRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', p: 2 }}>
       {messages.map((msg, i) => {
         const isHidden = hideLastAssistant && msg.role === 'assistant' && i === lastAssistantPosition;
         if (isHidden) return null;

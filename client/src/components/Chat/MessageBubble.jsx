@@ -45,6 +45,7 @@ export default function MessageBubble({
         gap: 1.5,
         justifyContent: isUser ? 'flex-end' : 'flex-start',
         mb: 2,
+        px: 1,
       }}
     >
       {!isUser && (
@@ -52,7 +53,7 @@ export default function MessageBubble({
           <SmartToyIcon fontSize="small" color="primary" />
         </Box>
       )}
-      <Box sx={{ maxWidth: isUser ? '75%' : '100%', minWidth: isUser ? 'auto' : 200, flex: !isUser ? 1 : 'none', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ maxWidth: '100%', minWidth: 0, flex: !isUser ? 1 : 'none', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Box
           sx={{
             px: 2,
@@ -63,6 +64,7 @@ export default function MessageBubble({
             border: isUser ? 'none' : 1,
             borderColor: 'divider',
             wordBreak: 'break-word',
+            overflowWrap: 'anywhere',
             '& p': { mt: 0, mb: 0.5 },
           }}
         >

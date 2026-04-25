@@ -25,25 +25,27 @@ export default function MessageInput({ onSend, isGenerating, onStop, disabled })
   };
 
   return (
-    <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+    <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper', flexShrink: 0 }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-        <TextField
-          inputRef={inputRef}
-          multiline
-          minRows={1}
-          maxRows={4}
-          fullWidth
-          placeholder={disabled ? '网络不可用...' : '输入消息...'}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onCompositionStart={() => { composingRef.current = true; }}
-          onCompositionEnd={() => { composingRef.current = false; }}
-          disabled={isGenerating || disabled}
-          size="small"
-        />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <TextField
+            inputRef={inputRef}
+            multiline
+            minRows={1}
+            maxRows={4}
+            fullWidth
+            placeholder={disabled ? '网络不可用...' : '输入消息...'}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onCompositionStart={() => { composingRef.current = true; }}
+            onCompositionEnd={() => { composingRef.current = false; }}
+            disabled={isGenerating || disabled}
+            size="small"
+          />
+        </Box>
         {isGenerating ? (
-          <IconButton color="error" onClick={onStop} title="停止生成">
+          <IconButton color="error" onClick={onStop} title="停止生成" sx={{ flexShrink: 0 }}>
             <StopIcon />
           </IconButton>
         ) : (
@@ -52,6 +54,7 @@ export default function MessageInput({ onSend, isGenerating, onStop, disabled })
             onClick={handleSend}
             disabled={!input.trim() || disabled}
             title="发送"
+            sx={{ flexShrink: 0 }}
           >
             <SendIcon />
           </IconButton>

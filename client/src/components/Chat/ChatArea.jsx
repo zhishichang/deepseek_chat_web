@@ -67,7 +67,7 @@ export default function ChatArea({ activeId, models, themeMode, onThemeChange, o
       <Box
         sx={{
           flex: 1,
-          height: '100vh',
+          minHeight: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -103,13 +103,14 @@ export default function ChatArea({ activeId, models, themeMode, onThemeChange, o
     <Box
       sx={{
         flex: 1,
-        height: '100vh',
+        minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
         bgcolor: 'background.default',
+        overflow: 'hidden',
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', px: 2, py: 0.5, gap: 0.5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', px: 2, py: 0.5, gap: 0.5, flexShrink: 0 }}>
         {onMenuClick && (
           <IconButton size="small" onClick={onMenuClick}>
             <MenuIcon />
@@ -153,7 +154,7 @@ export default function ChatArea({ activeId, models, themeMode, onThemeChange, o
       {error && (
         <Alert
           severity="error"
-          sx={{ mx: 2, alignItems: 'center' }}
+          sx={{ mx: 2, alignItems: 'center', flexShrink: 0 }}
           action={
             retryLast ? (
               <Button

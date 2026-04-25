@@ -13,7 +13,7 @@ export default function TokenUsageBar({ tokenCount }) {
   else if (isNearLimit) color = 'warning';
 
   return (
-    <Box sx={{ px: 2, pt: 1 }}>
+    <Box sx={{ px: 2, pt: 1, flexShrink: 0 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <LinearProgress
           variant="determinate"
