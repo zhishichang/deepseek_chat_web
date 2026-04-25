@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
 import MessageBubble from './MessageBubble';
-import StreamingIndicator from './StreamingIndicator';
 
 export default function MessageList({
   messages,
@@ -13,65 +12,48 @@ export default function MessageList({
   onRegenerate,
 }) {
   const containerRef = useRef(null);
-  const bottomRef = useRef(null);
   const autoScrollRef = useRef(true);
-  const userScrolledRef = useRef(false);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-
     const handleScroll = () => {
-      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
-      autoScrollRef.current = atBottom;
-      if (!atBottom) {
-        userScrolledRef.current = true;
-      }
+      autoScrollRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
     };
-
     el.addEventListener('scroll', handleScroll, { passive: true });
     return () => el.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Auto-scroll only when new messages arrive (not every streaming token)
-  // and only if user hasn't scrolled up
   useEffect(() => {
     if (!autoScrollRef.current) return;
     const el = containerRef.current;
     if (el) {
       el.scrollTop = el.scrollHeight;
     }
-  }, [messages.length]);
+  }, [messages.length, streamingContent, streamingReasoning]);
 
-  // While streaming, only stick to bottom if we were already at bottom
-  // Use direct scrollTop assignment instead of scrollIntoView to avoid animation queue
-  useEffect(() => {
-    if (!autoScrollRef.current) return;
-    const el = containerRef.current;
-    if (el) {
-      el.scrollTop = el.scrollHeight;
-    }
-  }, [streamingContent, streamingReasoning]);
+  // Determine if last DB message is assistant (regenerate scenario)
+  const lastMsg = messages[messages.length - 1];
+  const lastIsAssistant = lastMsg?.role === 'assistant';
 
-  // Reset user scroll flag when generation ends
-  useEffect(() => {
-    if (!isGenerating) {
-      userScrolledRef.current = false;
-    }
-  }, [isGenerating]);
+  // In regenerate: the last saved message is an old assistant response
+  // that will be replaced, so hide it while streaming.
+  // In normal send: the last saved message is the user's new message,
+  // so all DB messages should be visible.
+  const hideLastAssistant = isGenerating && lastIsAssistant;
 
-  const lastUserIdx = [...messages].reverse().findIndex((m) => m.role === 'user');
-  const lastUserPosition = lastUserIdx >= 0 ? messages.length - 1 - lastUserIdx : -1;
-
-  const lastAssistantInDb = [...messages].reverse().findIndex((m) => m.role === 'assistant');
-  const lastAssistantPosition = lastAssistantInDb >= 0 ? messages.length - 1 - lastAssistantInDb : -1;
+  const lastAssistantIdx = hideLastAssistant
+    ? [...messages].reverse().findIndex((m) => m.role === 'assistant')
+    : -1;
+  const lastAssistantPosition = lastAssistantIdx >= 0
+    ? messages.length - 1 - lastAssistantIdx
+    : -1;
 
   return (
     <Box ref={containerRef} sx={{ flex: 1, overflow: 'auto', p: 2 }}>
       {messages.map((msg, i) => {
-        if (isGenerating && msg.role === 'assistant' && i === lastAssistantPosition) {
-          return null;
-        }
+        const isHidden = hideLastAssistant && msg.role === 'assistant' && i === lastAssistantPosition;
+        if (isHidden) return null;
 
         const isLastAssistant = msg.role === 'assistant' && i === lastAssistantPosition;
 
@@ -91,6 +73,7 @@ export default function MessageList({
         );
       })}
 
+      {/* Streaming bubble always at the bottom while generating */}
       {isGenerating && (
         <MessageBubble
           message={{ role: 'assistant', content: '', reasoningContent: '', id: '__streaming__' }}
