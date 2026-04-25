@@ -6,9 +6,22 @@ import ThemeToggle from '../Common/ThemeToggle';
 import ConfirmDialog from '../Common/ConfirmDialog';
 import SearchBar from './SearchBar';
 import ConversationList from './ConversationList';
+import ModelSelector from './ModelSelector';
 import AddIcon from '@mui/icons-material/Add';
 
-export default function Sidebar({ onToggleTheme, themeMode, conversations, activeId, onSelectConversation, onNewConversation, onRenameConversation, onDeleteConversation }) {
+export default function Sidebar({
+  onToggleTheme,
+  themeMode,
+  conversations,
+  activeId,
+  onNewConversation,
+  onSelectConversation,
+  onRenameConversation,
+  onDeleteConversation,
+  models,
+  currentModel,
+  onModelChange,
+}) {
   const [search, setSearch] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -39,6 +52,10 @@ export default function Sidebar({ onToggleTheme, themeMode, conversations, activ
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h6" fontWeight={600} noWrap>DeepSeek Chat</Typography>
         <ThemeToggle mode={themeMode} onToggle={onToggleTheme} />
+      </Box>
+
+      <Box sx={{ px: 1, mb: 1 }}>
+        <ModelSelector models={models} value={currentModel} onChange={onModelChange} />
       </Box>
 
       <Box sx={{ px: 1 }}>

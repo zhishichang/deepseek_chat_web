@@ -1,15 +1,17 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { lightTheme, darkTheme } from './theme';
 import Layout from './components/Layout';
 import useSettings from './hooks/useSettings';
 import useConversations from './hooks/useConversations';
+import useModels from './hooks/useModels';
 import './db';
 
 export default function App() {
   const { settings, set } = useSettings();
   const conversationsState = useConversations();
+  const modelsState = useModels();
   const mode = settings.theme;
 
   const prefersDark = usePrefersDark();
@@ -31,6 +33,7 @@ export default function App() {
           onToggleTheme={handleToggle}
           themeMode={mode}
           conversationsState={conversationsState}
+          modelsState={modelsState}
           defaultModel={settings.defaultModel}
         />
       </BrowserRouter>
@@ -38,18 +41,21 @@ export default function App() {
   );
 }
 
-function AppContent({ onToggleTheme, themeMode, conversationsState, defaultModel }) {
+function AppContent({ onToggleTheme, themeMode, conversationsState, modelsState, defaultModel }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract conversationId from URL path
   const match = location.pathname.match(/^\/c\/(\d+)$/);
   const activeId = match ? Number(match[1]) : null;
 
+  // Current model: use the active conversation's model, or default
+  const activeConversation = conversationsState.conversations.find((c) => c.id === activeId);
+  const currentModel = activeConversation?.model || defaultModel;
+
   const handleNewConversation = useCallback(async () => {
-    const id = await conversationsState.create(defaultModel);
+    const id = await conversationsState.create(currentModel || defaultModel);
     navigate(`/c/${id}`);
-  }, [conversationsState, defaultModel, navigate]);
+  }, [conversationsState, currentModel, defaultModel, navigate]);
 
   const handleSelectConversation = useCallback((id) => {
     navigate(`/c/${id}`);
@@ -59,6 +65,12 @@ function AppContent({ onToggleTheme, themeMode, conversationsState, defaultModel
     await conversationsState.remove(id);
     if (activeId === id) navigate('/');
   }, [conversationsState, activeId, navigate]);
+
+  const handleModelChange = useCallback((model) => {
+    if (activeId) {
+      conversationsState.updateModel(activeId, model);
+    }
+  }, [activeId, conversationsState]);
 
   return (
     <Layout
@@ -70,6 +82,9 @@ function AppContent({ onToggleTheme, themeMode, conversationsState, defaultModel
       onSelectConversation={handleSelectConversation}
       onRenameConversation={conversationsState.rename}
       onDeleteConversation={handleDeleteConversation}
+      models={modelsState.models}
+      currentModel={currentModel}
+      onModelChange={handleModelChange}
     />
   );
 }
