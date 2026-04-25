@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { errorHandler } from './middleware/errorHandler.js';
+import chatRouter from './routes/chat.js';
 import { PORT } from './config.js';
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(express.json());
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+app.use('/api/chat', chatRouter);
 
 app.use(errorHandler);
 
