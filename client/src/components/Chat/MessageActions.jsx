@@ -18,25 +18,36 @@ export default function MessageActions({ message, onCopy, onEdit, onRegenerate, 
   };
 
   return (
-    <Box sx={{ display: 'flex', gap: 0.5, opacity: 0, transition: 'opacity 0.2s', '.MessageBubble-root:hover &': { opacity: 1 } }}>
+    <Box
+      sx={{
+        display: 'flex',
+        gap: 0,
+        opacity: 0,
+        transition: 'opacity 0.2s',
+        '.MessageBubble-root:hover &': { opacity: 0.7 },
+        '&:hover': { opacity: '1 !important' },
+        ml: -0.5,
+        mt: 0,
+      }}
+    >
       <Tooltip title="复制" arrow>
-        <IconButton size="small" onClick={handleCopy}>
-          {copied ? <CheckIcon fontSize="small" /> : <ContentCopyIcon fontSize="small" />}
+        <IconButton size="small" onClick={handleCopy} sx={{ p: 0.25 }}>
+          {copied ? <CheckIcon sx={{ fontSize: 14 }} /> : <ContentCopyIcon sx={{ fontSize: 14 }} />}
         </IconButton>
       </Tooltip>
 
       {isUser && onEdit && (
         <Tooltip title="编辑" arrow>
-          <IconButton size="small" onClick={() => onEdit(message)}>
-            <EditIcon fontSize="small" />
+          <IconButton size="small" onClick={() => onEdit(message)} sx={{ p: 0.25 }}>
+            <EditIcon sx={{ fontSize: 14 }} />
           </IconButton>
         </Tooltip>
       )}
 
       {!isUser && isLastAssistant && onRegenerate && (
         <Tooltip title="重新生成" arrow>
-          <IconButton size="small" onClick={onRegenerate}>
-            <RefreshIcon fontSize="small" />
+          <IconButton size="small" onClick={onRegenerate} sx={{ p: 0.25 }}>
+            <RefreshIcon sx={{ fontSize: 14 }} />
           </IconButton>
         </Tooltip>
       )}

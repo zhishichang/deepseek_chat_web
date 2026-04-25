@@ -45,7 +45,6 @@ export default function MessageBubble({
         gap: 1.5,
         justifyContent: isUser ? 'flex-end' : 'flex-start',
         mb: 2,
-        position: 'relative',
       }}
     >
       {!isUser && (
@@ -53,7 +52,7 @@ export default function MessageBubble({
           <SmartToyIcon fontSize="small" color="primary" />
         </Box>
       )}
-      <Box sx={{ maxWidth: '75%', position: 'relative' }}>
+      <Box sx={{ maxWidth: '75%', display: 'flex', flexDirection: 'column' }}>
         <Box
           sx={{
             px: 2,
@@ -107,17 +106,15 @@ export default function MessageBubble({
           )}
         </Box>
 
-        {/* Action buttons (hidden until hover) */}
+        {/* Action buttons inside the bubble flow, visible on hover */}
         {!editing && !isStreaming && (
-          <Box sx={{ position: 'absolute', top: -8, right: isUser ? 'auto' : -8, left: isUser ? -8 : 'auto' }}>
-            <MessageActions
-              message={message}
-              onCopy={onCopy}
-              onEdit={isUser ? startEdit : undefined}
-              onRegenerate={onRegenerate}
-              isLastAssistant={isLastAssistant}
-            />
-          </Box>
+          <MessageActions
+            message={message}
+            onCopy={onCopy}
+            onEdit={isUser ? startEdit : undefined}
+            onRegenerate={onRegenerate}
+            isLastAssistant={isLastAssistant}
+          />
         )}
       </Box>
 
