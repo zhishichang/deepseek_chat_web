@@ -10,37 +10,48 @@ export default function MessageList({ messages, streamingContent, streamingReaso
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingContent, streamingReasoning]);
 
+  // Find the last assistant message for streaming
+  const lastAssistantIdx = [...messages].reverse().findIndex((m) => m.role === 'assistant');
+  const streamingIdx = lastAssistantIdx >= 0 ? messages.length - 1 - lastAssistantIdx : -1;
+
   return (
     <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
       {messages.map((msg, i) => {
-        const isLastAssistant = msg.role === 'assistant' && i === messages.length - 1;
+        const isStreamingThis = isGenerating && msg.role === 'assistant' && i === streamingIdx;
         return (
           <MessageBubble
             key={msg.id}
             message={msg}
-            isStreaming={isGenerating && isLastAssistant && !streamingReasoning}
-            streamingContent={streamingContent}
+            isStreaming={isStreamingThis}
+            streamingContent={isStreamingThis ? streamingContent : ''}
+            streamingReasoning={isStreamingThis ? streamingReasoning : ''}
           />
         );
       })}
 
-      {/* Show reasoning indicator while model is thinking */}
-      {isGenerating && streamingReasoning && !streamingContent && (
-        <StreamingIndicator reasoning />
-      )}
-
-      {/* Show streaming content bubble (assistant response in progress) */}
-      {isGenerating && streamingContent && (
+      {/* New assistant message being generated (not yet saved to DB) */}
+      {isGenerating && streamingIdx === -1 && streamingContent && (
         <MessageBubble
-          message={{ role: 'assistant', content: '' }}
+          message={{ role: 'assistant', content: '', reasoningContent: '' }}
           isStreaming
           streamingContent={streamingContent}
+          streamingReasoning={streamingReasoning}
         />
       )}
 
-      {/* Show thinking indicator at the start before any content */}
-      {isGenerating && !streamingReasoning && !streamingContent && (
+      {/* Thinking indicator before any content arrives */}
+      {isGenerating && !streamingContent && !streamingReasoning && (
         <StreamingIndicator />
+      )}
+
+      {/* Reasoning indicator */}
+      {isGenerating && streamingReasoning && !streamingContent && streamingIdx === -1 && (
+        <MessageBubble
+          message={{ role: 'assistant', content: '', reasoningContent: '' }}
+          isStreaming
+          streamingContent=""
+          streamingReasoning={streamingReasoning}
+        />
       )}
 
       <div ref={bottomRef} />
