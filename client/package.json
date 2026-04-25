@@ -1,0 +1,33 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@mui/icons-material": "^6",
+    "@mui/material": "^6",
+    "dexie": "^4",
+    "dexie-react-hooks": "^1",
+    "dompurify": "^3",
+    "gpt-tokenizer": "^2",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-markdown": "^9",
+    "react-router-dom": "^6",
+    "rehype-highlight": "^7",
+    "remark-gfm": "^4"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^4",
+    "vite": "^5"
+  }
+}
