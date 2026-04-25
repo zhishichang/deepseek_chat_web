@@ -13,6 +13,7 @@ export default function MessageList({
 }) {
   const containerRef = useRef(null);
   const autoScrollRef = useRef(true);
+  const bottomRef = useRef(null);
 
   useEffect(() => {
     const el = containerRef.current;
