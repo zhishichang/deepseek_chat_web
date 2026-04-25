@@ -30,7 +30,12 @@ export default function Layout({
         currentModel={currentModel}
         onModelChange={onModelChange}
       />
-      <ChatArea activeId={activeId} />
+      <ChatArea
+        activeId={activeId}
+        models={models}
+        themeMode={themeMode}
+        onThemeChange={(mode) => onToggleTheme(mode)}
+      />
     </Box>
   );
 }

@@ -18,9 +18,8 @@ export default function App() {
   const isDark = mode === 'dark' || (mode === 'system' && prefersDark);
   const theme = useMemo(() => (isDark ? darkTheme : lightTheme), [isDark]);
 
-  const handleToggle = () => {
-    const next = isDark ? 'light' : 'dark';
-    set('theme', next);
+  const handleToggle = (mode) => {
+    set('theme', mode || (isDark ? 'light' : 'dark'));
   };
 
   if (settings === undefined) return null;

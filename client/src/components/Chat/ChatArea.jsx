@@ -10,13 +10,15 @@ import MenuItem from '@mui/material/MenuItem';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TokenUsageBar from './TokenUsageBar';
+import SettingsDialog from '../Settings/SettingsDialog';
 import useChat from '../../hooks/useChat';
+import useSettings from '../../hooks/useSettings';
 import useTokenCount from '../../hooks/useTokenCount';
 import db from '../../db';
 import { exportAsMarkdown, exportAsJSON, downloadFile } from '../../utils/export';
 import IosShareIcon from '@mui/icons-material/IosShare';
 
-export default function ChatArea({ activeId }) {
+export default function ChatArea({ activeId, models, themeMode, onThemeChange }) {
   const {
     messages,
     streamingContent,
@@ -29,6 +31,7 @@ export default function ChatArea({ activeId }) {
     editMessage,
     lastUsage,
   } = useChat(activeId);
+  const { settings, set: updateSetting, reset: resetSettings } = useSettings();
   const tokenCount = useTokenCount(messages, lastUsage);
   const [snackbar, setSnackbar] = useState('');
   const [exportAnchor, setExportAnchor] = useState(null);
@@ -61,8 +64,19 @@ export default function ChatArea({ activeId }) {
           alignItems: 'center',
           justifyContent: 'center',
           bgcolor: 'background.default',
+          position: 'relative',
         }}
       >
+        <Box sx={{ position: 'absolute', top: 0, right: 0, px: 2, py: 0.5 }}>
+          <SettingsDialog
+            settings={settings}
+            models={models}
+            onUpdate={updateSetting}
+            onReset={resetSettings}
+            themeMode={themeMode}
+            onThemeChange={onThemeChange}
+          />
+        </Box>
         <Typography variant="h5" color="text.secondary">
           选择或创建一个对话开始聊天
         </Typography>
@@ -81,6 +95,14 @@ export default function ChatArea({ activeId }) {
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, py: 0.5 }}>
+        <SettingsDialog
+          settings={settings}
+          models={models}
+          onUpdate={updateSetting}
+          onReset={resetSettings}
+          themeMode={themeMode}
+          onThemeChange={onThemeChange}
+        />
         <Tooltip title="导出对话">
           <IconButton size="small" onClick={(e) => setExportAnchor(e.currentTarget)}>
             <IosShareIcon fontSize="small" />
