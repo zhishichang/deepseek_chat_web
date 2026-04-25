@@ -1,5 +1,44 @@
-function App() {
-  return <div>DeepSeek Chat</div>;
+import { useState, useMemo, useEffect } from 'react';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import { lightTheme, darkTheme } from './theme';
+import Layout from './components/Layout';
+
+export default function App() {
+  const [mode, setMode] = useState(() => {
+    return localStorage.getItem('theme') || 'system';
+  });
+
+  const prefersDark = usePrefersDark();
+  const isDark = mode === 'dark' || (mode === 'system' && prefersDark);
+  const theme = useMemo(() => (isDark ? darkTheme : lightTheme), [isDark]);
+
+  const handleToggle = () => {
+    setMode((prev) => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', next);
+      return next;
+    });
+  };
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Layout onToggleTheme={handleToggle} themeMode={mode} />
+    </ThemeProvider>
+  );
 }
 
-export default App;
+function usePrefersDark() {
+  const [prefersDark, setPrefersDark] = useState(() =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e) => setPrefersDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  return prefersDark;
+}
