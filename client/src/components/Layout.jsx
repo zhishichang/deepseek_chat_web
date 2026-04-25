@@ -2,11 +2,20 @@ import Box from '@mui/material/Box';
 import Sidebar from './Sidebar/Sidebar';
 import ChatArea from './Chat/ChatArea';
 
-export default function Layout({ onToggleTheme, themeMode }) {
+export default function Layout({ onToggleTheme, themeMode, conversations, activeId, onNewConversation, onSelectConversation, onRenameConversation, onDeleteConversation }) {
   return (
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      <Sidebar onToggleTheme={onToggleTheme} themeMode={themeMode} />
-      <ChatArea />
+      <Sidebar
+        onToggleTheme={onToggleTheme}
+        themeMode={themeMode}
+        conversations={conversations}
+        activeId={activeId}
+        onNewConversation={onNewConversation}
+        onSelectConversation={onSelectConversation}
+        onRenameConversation={onRenameConversation}
+        onDeleteConversation={onDeleteConversation}
+      />
+      <ChatArea activeId={activeId} />
     </Box>
   );
 }
