@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { errorHandler } from './middleware/errorHandler.js';
 import chatRouter from './routes/chat.js';
 import modelsRouter from './routes/models.js';
+import tokensRouter from './routes/tokens.js';
 import { PORT } from './config.js';
 
 const app = express();
@@ -17,6 +18,7 @@ app.get('/api/health', (req, res) => {
 });
 app.use('/api/chat', chatRouter);
 app.use('/api/models', modelsRouter);
+app.use('/api/count-tokens', tokensRouter);
 
 app.use(errorHandler);
 

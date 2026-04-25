@@ -11,6 +11,7 @@ export default function useChat(conversationId) {
   const [streamingReasoning, setStreamingReasoning] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
+  const [lastUsage, setLastUsage] = useState(null);
   const usageRef = useRef(null);
 
   const messages = useLiveQuery(
@@ -94,6 +95,7 @@ export default function useChat(conversationId) {
         },
         onUsage: (usage) => {
           usageRef.current = usage;
+          setLastUsage(usage);
         },
         onDone: async () => {
           // Save assistant message
@@ -192,5 +194,6 @@ export default function useChat(conversationId) {
     regenerate,
     editMessage,
     deleteMessage,
+    lastUsage,
   };
 }

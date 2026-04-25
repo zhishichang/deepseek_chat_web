@@ -9,7 +9,9 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
+import TokenUsageBar from './TokenUsageBar';
 import useChat from '../../hooks/useChat';
+import useTokenCount from '../../hooks/useTokenCount';
 import db from '../../db';
 import { exportAsMarkdown, exportAsJSON, downloadFile } from '../../utils/export';
 import IosShareIcon from '@mui/icons-material/IosShare';
@@ -25,7 +27,9 @@ export default function ChatArea({ activeId }) {
     stop,
     regenerate,
     editMessage,
+    lastUsage,
   } = useChat(activeId);
+  const tokenCount = useTokenCount(messages, lastUsage);
   const [snackbar, setSnackbar] = useState('');
   const [exportAnchor, setExportAnchor] = useState(null);
 
@@ -76,7 +80,6 @@ export default function ChatArea({ activeId }) {
         bgcolor: 'background.default',
       }}
     >
-      {/* Top bar with export */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, py: 0.5 }}>
         <Tooltip title="导出对话">
           <IconButton size="small" onClick={(e) => setExportAnchor(e.currentTarget)}>
@@ -92,6 +95,8 @@ export default function ChatArea({ activeId }) {
           <MenuItem onClick={handleExportJSON}>导出为 JSON</MenuItem>
         </Menu>
       </Box>
+
+      <TokenUsageBar tokenCount={tokenCount} />
 
       {error && (
         <Alert severity="error" sx={{ mx: 2 }}>
