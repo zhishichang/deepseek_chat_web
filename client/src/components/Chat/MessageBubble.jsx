@@ -52,7 +52,7 @@ export default function MessageBubble({
           <SmartToyIcon fontSize="small" color="primary" />
         </Box>
       )}
-      <Box sx={{ maxWidth: '75%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ maxWidth: isUser ? '75%' : '100%', minWidth: isUser ? 'auto' : 200, flex: !isUser ? 1 : 'none', display: 'flex', flexDirection: 'column' }}>
         <Box
           sx={{
             px: 2,
