@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import db from '../db';
 
 const DEFAULTS = {
-  defaultModel: 'deepseek-chat',
+  defaultModel: 'deepseek-v4-pro',
   systemPrompt: '',
   temperature: 0.7,
   maxTokens: 4096,

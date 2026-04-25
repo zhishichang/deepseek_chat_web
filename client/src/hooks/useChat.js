@@ -26,7 +26,7 @@ export default function useChat(conversationId) {
   );
 
   const sendMessage = useCallback(async (content) => {
-    if (!conversationId || !content.trim()) return;
+    if (!conversationId || !content.trim() || isGenerating) return;
 
     setError(null);
     const now = new Date().toISOString();
