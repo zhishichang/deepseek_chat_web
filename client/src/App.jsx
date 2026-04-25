@@ -2,24 +2,23 @@ import { useState, useMemo, useEffect } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { lightTheme, darkTheme } from './theme';
 import Layout from './components/Layout';
+import useSettings from './hooks/useSettings';
 import './db';
 
 export default function App() {
-  const [mode, setMode] = useState(() => {
-    return localStorage.getItem('theme') || 'system';
-  });
+  const { settings, set } = useSettings();
+  const mode = settings.theme;
 
   const prefersDark = usePrefersDark();
   const isDark = mode === 'dark' || (mode === 'system' && prefersDark);
   const theme = useMemo(() => (isDark ? darkTheme : lightTheme), [isDark]);
 
   const handleToggle = () => {
-    setMode((prev) => {
-      const next = prev === 'light' ? 'dark' : 'light';
-      localStorage.setItem('theme', next);
-      return next;
-    });
+    const next = isDark ? 'light' : 'dark';
+    set('theme', next);
   };
+
+  if (settings === undefined) return null;
 
   return (
     <ThemeProvider theme={theme}>
