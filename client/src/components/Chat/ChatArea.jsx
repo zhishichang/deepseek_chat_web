@@ -21,8 +21,9 @@ import { exportAsMarkdown, exportAsJSON, downloadFile } from '../../utils/export
 import IosShareIcon from '@mui/icons-material/IosShare';
 import ReplayIcon from '@mui/icons-material/Replay';
 import WifiOffIcon from '@mui/icons-material/WifiOff';
+import MenuIcon from '@mui/icons-material/Menu';
 
-export default function ChatArea({ activeId, models, themeMode, onThemeChange }) {
+export default function ChatArea({ activeId, models, themeMode, onThemeChange, onMenuClick }) {
   const {
     messages,
     streamingContent,
@@ -74,6 +75,13 @@ export default function ChatArea({ activeId, models, themeMode, onThemeChange })
           position: 'relative',
         }}
       >
+        <Box sx={{ position: 'absolute', top: 0, left: 0, px: 1, py: 0.5 }}>
+          {onMenuClick && (
+            <IconButton size="small" onClick={onMenuClick}>
+              <MenuIcon />
+            </IconButton>
+          )}
+        </Box>
         <Box sx={{ position: 'absolute', top: 0, right: 0, px: 2, py: 0.5 }}>
           <SettingsDialog
             settings={settings}
@@ -102,6 +110,11 @@ export default function ChatArea({ activeId, models, themeMode, onThemeChange })
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', px: 2, py: 0.5, gap: 0.5 }}>
+        {onMenuClick && (
+          <IconButton size="small" onClick={onMenuClick}>
+            <MenuIcon />
+          </IconButton>
+        )}
         {!online && (
           <Chip
             icon={<WifiOffIcon />}

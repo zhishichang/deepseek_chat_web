@@ -1,12 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import ThemeToggle from '../Common/ThemeToggle';
-import ConfirmDialog from '../Common/ConfirmDialog';
+import Drawer from '@mui/material/Drawer';
+import ModelSelector from './ModelSelector';
 import SearchBar from './SearchBar';
 import ConversationList from './ConversationList';
-import ModelSelector from './ModelSelector';
+import ThemeToggle from '../Common/ThemeToggle';
+import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 
 export default function Sidebar({
@@ -21,56 +20,44 @@ export default function Sidebar({
   models,
   currentModel,
   onModelChange,
+  drawer,
+  open,
+  onClose,
 }) {
   const [search, setSearch] = useState('');
-  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const filtered = search
-    ? conversations.filter((c) => c.title.toLowerCase().includes(search.toLowerCase()))
-    : conversations;
+  const filtered = useMemo(() => {
+    if (!search.trim()) return conversations;
+    const q = search.toLowerCase();
+    return conversations.filter((c) => c.title?.toLowerCase().includes(q));
+  }, [conversations, search]);
 
-  const handleDelete = () => {
-    if (deleteTarget) {
-      onDeleteConversation(deleteTarget);
-      setDeleteTarget(null);
-    }
-  };
-
-  return (
+  const content = (
     <Box
       sx={{
         width: 280,
-        minWidth: 280,
         height: '100vh',
-        bgcolor: 'sidebar.bg',
-        borderRight: 1,
-        borderColor: 'divider',
         display: 'flex',
         flexDirection: 'column',
+        bgcolor: 'background.paper',
+        borderRight: drawer ? 0 : 1,
+        borderColor: 'divider',
+        overflow: 'hidden',
       }}
     >
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" fontWeight={600} noWrap>DeepSeek Chat</Typography>
-        <ThemeToggle mode={themeMode} onToggle={onToggleTheme} />
-      </Box>
-
-      <Box sx={{ px: 1, mb: 1 }}>
+      <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
         <ModelSelector models={models} value={currentModel} onChange={onModelChange} />
-      </Box>
-
-      <Box sx={{ px: 1 }}>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<AddIcon />}
+          onClick={onNewConversation}
+          fullWidth
+        >
+          新建对话
+        </Button>
         <SearchBar value={search} onChange={setSearch} />
       </Box>
-
-      <Button
-        variant="outlined"
-        startIcon={<AddIcon />}
-        onClick={onNewConversation}
-        sx={{ mx: 1, mb: 1 }}
-        size="small"
-      >
-        新建对话
-      </Button>
 
       <Box sx={{ flex: 1, overflow: 'auto', px: 1 }}>
         <ConversationList
@@ -78,22 +65,31 @@ export default function Sidebar({
           activeId={activeId}
           onSelect={onSelectConversation}
           onRename={onRenameConversation}
-          onDelete={(id) => setDeleteTarget(id)}
+          onDelete={onDeleteConversation}
         />
-        {filtered.length === 0 && (
-          <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
-            {search ? '没有匹配的对话' : '点击上方按钮新建对话'}
-          </Typography>
-        )}
       </Box>
 
-      <ConfirmDialog
-        open={Boolean(deleteTarget)}
-        title="删除对话"
-        message="确定要删除这个对话吗？此操作无法撤销。"
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteTarget(null)}
-      />
+      <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider' }}>
+        <ThemeToggle mode={themeMode} onToggle={onToggleTheme} />
+      </Box>
     </Box>
   );
+
+  if (drawer) {
+    return (
+      <Drawer
+        variant="temporary"
+        open={open}
+        onClose={onClose}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 280 },
+        }}
+      >
+        {content}
+      </Drawer>
+    );
+  }
+
+  return content;
 }
