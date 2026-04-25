@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { lightTheme, darkTheme } from './theme';
 import Layout from './components/Layout';
+import './db';
 
 export default function App() {
   const [mode, setMode] = useState(() => {
