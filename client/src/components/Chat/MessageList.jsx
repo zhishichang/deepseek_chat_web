@@ -15,22 +15,50 @@ export default function MessageList({
   const containerRef = useRef(null);
   const bottomRef = useRef(null);
   const autoScrollRef = useRef(true);
+  const userScrolledRef = useRef(false);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+
     const handleScroll = () => {
-      autoScrollRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+      autoScrollRef.current = atBottom;
+      if (!atBottom) {
+        userScrolledRef.current = true;
+      }
     };
-    el.addEventListener('scroll', handleScroll);
+
+    el.addEventListener('scroll', handleScroll, { passive: true });
     return () => el.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Auto-scroll only when new messages arrive (not every streaming token)
+  // and only if user hasn't scrolled up
   useEffect(() => {
-    if (autoScrollRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!autoScrollRef.current) return;
+    const el = containerRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
     }
-  }, [messages, streamingContent, streamingReasoning]);
+  }, [messages.length]);
+
+  // While streaming, only stick to bottom if we were already at bottom
+  // Use direct scrollTop assignment instead of scrollIntoView to avoid animation queue
+  useEffect(() => {
+    if (!autoScrollRef.current) return;
+    const el = containerRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [streamingContent, streamingReasoning]);
+
+  // Reset user scroll flag when generation ends
+  useEffect(() => {
+    if (!isGenerating) {
+      userScrolledRef.current = false;
+    }
+  }, [isGenerating]);
 
   const lastUserIdx = [...messages].reverse().findIndex((m) => m.role === 'user');
   const lastUserPosition = lastUserIdx >= 0 ? messages.length - 1 - lastUserIdx : -1;
@@ -41,7 +69,6 @@ export default function MessageList({
   return (
     <Box ref={containerRef} sx={{ flex: 1, overflow: 'auto', p: 2 }}>
       {messages.map((msg, i) => {
-        // While generating, hide the last assistant from DB to avoid duplicate
         if (isGenerating && msg.role === 'assistant' && i === lastAssistantPosition) {
           return null;
         }
@@ -64,7 +91,6 @@ export default function MessageList({
         );
       })}
 
-      {/* Single streaming/placeholder bubble at the bottom while generating */}
       {isGenerating && (
         <MessageBubble
           message={{ role: 'assistant', content: '', reasoningContent: '', id: '__streaming__' }}
