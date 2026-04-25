@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
@@ -12,7 +12,21 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 export default function ConversationItem({ conversation, active, onSelect, onRename, onDelete }) {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [editing, setEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState(conversation.title);
+  const [editTitle, setEditTitle] = useState('');
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const startEditing = () => {
+    setEditTitle(conversation.title);
+    setEditing(true);
+    setMenuAnchor(null);
+  };
 
   const handleRenameSubmit = () => {
     const trimmed = editTitle.trim();
@@ -25,58 +39,58 @@ export default function ConversationItem({ conversation, active, onSelect, onRen
   const modelLabel = conversation.model?.replace('deepseek-', '') || 'chat';
 
   return (
-    <ListItemButton
-      selected={active}
-      onClick={() => !editing && onSelect(conversation.id)}
-      sx={{ borderRadius: 1, mb: 0.5 }}
-    >
-      {editing ? (
-        <TextField
-          size="small"
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          onBlur={handleRenameSubmit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleRenameSubmit();
-            if (e.key === 'Escape') setEditing(false);
-          }}
-          autoFocus
-          fullWidth
-          onClick={(e) => e.stopPropagation()}
-        />
-      ) : (
-        <>
-          <ListItemText
-            primary={conversation.title}
-            primaryTypographyProps={{ noWrap: true, fontSize: 14 }}
+    <>
+      <ListItemButton
+        selected={active}
+        onClick={() => !editing && onSelect(conversation.id)}
+        sx={{ borderRadius: 1, mb: 0.5, pr: 1 }}
+      >
+        {editing ? (
+          <TextField
+            inputRef={inputRef}
+            size="small"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            onBlur={handleRenameSubmit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { e.preventDefault(); handleRenameSubmit(); }
+              if (e.key === 'Escape') setEditing(false);
+            }}
+            fullWidth
+            onClick={(e) => e.stopPropagation()}
           />
-          <Box sx={{ display: 'flex', alignItems: 'center', ml: 1, gap: 0.5 }}>
-            <Chip label={modelLabel} size="small" variant="outlined" sx={{ fontSize: 10, height: 20 }} />
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuAnchor(e.currentTarget);
-              }}
-            >
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        </>
-      )}
+        ) : (
+          <>
+            <ListItemText
+              primary={conversation.title}
+              primaryTypographyProps={{ noWrap: true, fontSize: 14 }}
+            />
+            <Box sx={{ display: 'flex', alignItems: 'center', ml: 1, gap: 0.5, flexShrink: 0 }}>
+              <Chip label={modelLabel} size="small" variant="outlined" sx={{ fontSize: 10, height: 20 }} />
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuAnchor(e.currentTarget);
+                }}
+              >
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </>
+        )}
+      </ListItemButton>
 
       <Menu
         anchorEl={menuAnchor}
         open={Boolean(menuAnchor)}
         onClose={() => setMenuAnchor(null)}
       >
-        <MenuItem onClick={() => { setEditing(true); setMenuAnchor(null); }}>
-          重命名
-        </MenuItem>
+        <MenuItem onClick={startEditing}>重命名</MenuItem>
         <MenuItem onClick={() => { onDelete(conversation.id); setMenuAnchor(null); }} sx={{ color: 'error.main' }}>
           删除
         </MenuItem>
       </Menu>
-    </ListItemButton>
+    </>
   );
 }

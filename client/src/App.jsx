@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { lightTheme, darkTheme } from './theme';
 import Layout from './components/Layout';
@@ -40,8 +40,11 @@ export default function App() {
 
 function AppContent({ onToggleTheme, themeMode, conversationsState, defaultModel }) {
   const navigate = useNavigate();
-  const { conversationId } = useParams();
-  const activeId = conversationId ? Number(conversationId) : null;
+  const location = useLocation();
+
+  // Extract conversationId from URL path
+  const match = location.pathname.match(/^\/c\/(\d+)$/);
+  const activeId = match ? Number(match[1]) : null;
 
   const handleNewConversation = useCallback(async () => {
     const id = await conversationsState.create(defaultModel);
@@ -58,38 +61,16 @@ function AppContent({ onToggleTheme, themeMode, conversationsState, defaultModel
   }, [conversationsState, activeId, navigate]);
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <Layout
-            onToggleTheme={onToggleTheme}
-            themeMode={themeMode}
-            conversations={conversationsState.conversations}
-            activeId={null}
-            onNewConversation={handleNewConversation}
-            onSelectConversation={handleSelectConversation}
-            onRenameConversation={conversationsState.rename}
-            onDeleteConversation={handleDeleteConversation}
-          />
-        }
-      />
-      <Route
-        path="/c/:conversationId"
-        element={
-          <Layout
-            onToggleTheme={onToggleTheme}
-            themeMode={themeMode}
-            conversations={conversationsState.conversations}
-            activeId={activeId}
-            onNewConversation={handleNewConversation}
-            onSelectConversation={handleSelectConversation}
-            onRenameConversation={conversationsState.rename}
-            onDeleteConversation={handleDeleteConversation}
-          />
-        }
-      />
-    </Routes>
+    <Layout
+      onToggleTheme={onToggleTheme}
+      themeMode={themeMode}
+      conversations={conversationsState.conversations}
+      activeId={activeId}
+      onNewConversation={handleNewConversation}
+      onSelectConversation={handleSelectConversation}
+      onRenameConversation={conversationsState.rename}
+      onDeleteConversation={handleDeleteConversation}
+    />
   );
 }
 
