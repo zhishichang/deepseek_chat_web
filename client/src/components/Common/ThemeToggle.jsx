@@ -8,7 +8,7 @@ export default function ThemeToggle({ mode, onToggle }) {
   const isDark = theme.palette.mode === 'dark';
 
   return (
-    <IconButton onClick={onToggle} size="small" title={isDark ? '切换亮色' : '切换暗色'}>
+    <IconButton onClick={() => onToggle()} size="small" title={isDark ? '切换亮色' : '切换暗色'}>
       {isDark ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
     </IconButton>
   );

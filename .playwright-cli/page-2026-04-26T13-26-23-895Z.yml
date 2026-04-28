@@ -1,0 +1,36 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - combobox [ref=e8] [cursor=pointer]: deepseek-v4-pro
+        - textbox: deepseek-v4-pro
+        - img
+        - group
+      - button "新建对话" [active] [ref=e9] [cursor=pointer]:
+        - img [ref=e11]
+        - text: 新建对话
+      - generic [ref=e14]:
+        - img [ref=e16]
+        - textbox "搜索对话..." [ref=e18]
+        - group
+    - list [ref=e31]:
+      - button "新对话 v4-pro" [ref=e32] [cursor=pointer]:
+        - generic [ref=e34]: 新对话
+        - generic [ref=e35]:
+          - generic [ref=e37]: v4-pro
+          - button [ref=e38]:
+            - img [ref=e39]
+    - button "切换暗色" [ref=e21] [cursor=pointer]:
+      - img [ref=e22]
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - button "设置" [ref=e41] [cursor=pointer]:
+        - img [ref=e42]
+      - button "导出对话" [ref=e44] [cursor=pointer]:
+        - img [ref=e45]
+    - generic [ref=e49]:
+      - generic [ref=e52]:
+        - textbox "输入消息..." [ref=e53]
+        - group
+      - button "发送" [disabled]:
+        - img

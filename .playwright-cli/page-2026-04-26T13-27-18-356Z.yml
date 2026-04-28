@@ -1,0 +1,79 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - combobox [ref=e8] [cursor=pointer]: deepseek-v4-pro
+        - textbox: deepseek-v4-pro
+        - img
+        - group
+      - button "新建对话" [ref=e9] [cursor=pointer]:
+        - img [ref=e11]
+        - text: 新建对话
+      - generic [ref=e14]:
+        - img [ref=e16]
+        - textbox "搜索对话..." [ref=e18]
+        - group
+    - list [ref=e31]:
+      - button "新对话 v4-pro" [ref=e32] [cursor=pointer]:
+        - generic [ref=e34]: 新对话
+        - generic [ref=e35]:
+          - generic [ref=e37]: v4-pro
+          - button [ref=e38]:
+            - img [ref=e39]
+    - button "切换暗色" [ref=e21] [cursor=pointer]:
+      - img [ref=e22]
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - button "设置" [ref=e41] [cursor=pointer]:
+        - img [ref=e42]
+      - button "导出对话" [ref=e44] [cursor=pointer]:
+        - img [ref=e45]
+    - generic [ref=e58]:
+      - progressbar [ref=e59]
+      - generic [ref=e61]: 12 / 65,536
+    - generic [ref=e47]:
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - generic [ref=e66]: 你好，请用三句话介绍你自己
+          - generic [ref=e67]:
+            - button "复制" [ref=e68] [cursor=pointer]:
+              - img [ref=e69]
+            - button "编辑" [ref=e71] [cursor=pointer]:
+              - img [ref=e72]
+        - img [ref=e75]
+      - generic [ref=e78]:
+        - img [ref=e80]
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - generic [ref=e85] [cursor=pointer]:
+              - generic [ref=e86]: 思维过程
+              - button [ref=e87]:
+                - img [ref=e88]
+            - list [ref=e91]:
+              - listitem [ref=e92]: 我是DeepSeek，由深度求索公司创造的AI助手，致力于用热情、细腻的方式为你提供帮助。
+              - listitem [ref=e93]: 我是完全免费的纯文本模型，支持1M超长上下文，可以处理海量信息并从中为你提炼答案。
+              - listitem [ref=e94]: 我能阅读链接、上传文件（图片、PDF、Word等），但不支持多模态识别，你可以在官方应用商店下载App使用我。
+          - button "复制" [ref=e96] [cursor=pointer]:
+            - img [ref=e97]
+      - generic [ref=e102]:
+        - generic [ref=e103]:
+          - generic [ref=e105]: 请写一首关于春天的五言绝句
+          - generic [ref=e106]:
+            - button "复制" [ref=e107] [cursor=pointer]:
+              - img [ref=e108]
+            - button "编辑" [ref=e110] [cursor=pointer]:
+              - img [ref=e111]
+        - img [ref=e114]
+      - generic [ref=e116]:
+        - img [ref=e118]
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - generic [ref=e124]: 思维过程
+            - generic [ref=e125]: ...
+          - generic [ref=e126]: 好的，用户刚才让我用三句话介绍自己，现在又让我写一首关于春天的五言绝句。 嗯，用户可能是在测试我的文学创作能力，或者单纯想要一首描写春天的小诗。从之前的对话看，用户似乎对我的功能比较好奇，现在转而提出一个具体的创作任务。 用户可能希望得到一首简洁、有意境、符合五言绝句格律的古典诗歌。五言绝句要求每句五个字，共四句，最好押韵。我需要创作出既能展现春天景色，又有一定诗意和情感的作品。 考虑到用户没有指定具体风格，我可以提供不同侧重点的版本，比如一个偏重春日景象的描绘，一个偏重情感与哲思的抒发。这样能让用户有选择。 在回复时，除了给出诗句，最好还能简单解析一下每首诗的意象和表达，帮助用户理解。这样既完成了创作，也展示了我的文学
+    - generic [ref=e49]:
+      - generic [ref=e52]:
+        - textbox "输入消息..." [disabled] [ref=e53]
+        - group
+      - button "停止生成" [ref=e127] [cursor=pointer]:
+        - img [ref=e128]

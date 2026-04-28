@@ -1,0 +1,63 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - combobox [ref=e8] [cursor=pointer]: deepseek-v4-pro
+        - textbox: deepseek-v4-pro
+        - img
+        - group
+      - button "新建对话" [ref=e9] [cursor=pointer]:
+        - img [ref=e11]
+        - text: 新建对话
+      - generic [ref=e14]:
+        - img [ref=e16]
+        - textbox "搜索对话..." [ref=e18]
+        - group
+    - list [ref=e31]:
+      - button "新对话 v4-pro" [ref=e32] [cursor=pointer]:
+        - generic [ref=e34]: 新对话
+        - generic [ref=e35]:
+          - generic [ref=e37]: v4-pro
+          - button [ref=e38]:
+            - img [ref=e39]
+    - button "切换暗色" [ref=e21] [cursor=pointer]:
+      - img [ref=e22]
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - button "设置" [ref=e41] [cursor=pointer]:
+        - img [ref=e42]
+      - button "导出对话" [ref=e44] [cursor=pointer]:
+        - img [ref=e45]
+    - generic [ref=e58]:
+      - progressbar [ref=e59]
+      - generic [ref=e61]: 12 / 65,536
+    - generic [ref=e47]:
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - generic [ref=e66]: 你好，请用三句话介绍你自己
+          - generic [ref=e67]:
+            - button "复制" [ref=e68] [cursor=pointer]:
+              - img [ref=e69]
+            - button "编辑" [ref=e71] [cursor=pointer]:
+              - img [ref=e72]
+        - img [ref=e75]
+      - generic [ref=e78]:
+        - img [ref=e80]
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - generic [ref=e85] [cursor=pointer]:
+              - generic [ref=e86]: 思维过程
+              - button [ref=e87]:
+                - img [ref=e88]
+            - list [ref=e91]:
+              - listitem [ref=e92]: 我是DeepSeek，由深度求索公司创造的AI助手，致力于用热情、细腻的方式为你提供帮助。
+              - listitem [ref=e93]: 我是完全免费的纯文本模型，支持1M超长上下文，可以处理海量信息并从中为你提炼答案。
+              - listitem [ref=e94]: 我能阅读链接、上传文件（图片、PDF、Word等），但不支持多模态识别，你可以在官方应用商店下载App使用我。
+          - button "复制" [ref=e96] [cursor=pointer]:
+            - img [ref=e97]
+    - generic [ref=e49]:
+      - generic [ref=e52]:
+        - textbox "输入消息..." [ref=e53]
+        - group
+      - button "发送" [disabled]:
+        - img
