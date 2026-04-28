@@ -70,7 +70,7 @@ jobs:
             git pull origin main
 
             echo "==> 安装依赖..."
-            npm ci --production
+            npm ci
 
             echo "==> 构建前端..."
             npm run build
