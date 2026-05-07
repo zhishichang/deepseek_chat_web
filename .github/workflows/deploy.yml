@@ -55,6 +55,18 @@ jobs:
           name: client-dist
           path: client/dist/
 
+      - name: Debug SSH key fingerprint
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          echo "=== Key fingerprint in GitHub Secret ==="
+          ssh-keygen -y -f /tmp/deploy_key 2>/dev/null || echo "ERROR: Invalid private key format!"
+          echo ""
+          echo "=== Expected fingerprint (from server) ==="
+          echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCQebetHcmghdOoi02Ir0PkBV8K6Xi53FXZm/yDc9aS github-actions-deploy"
+          rm -f /tmp/deploy_key
+
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1
         with:
