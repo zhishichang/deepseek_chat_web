@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
+import AndroidIcon from '@mui/icons-material/Android';
 import PersonIcon from '@mui/icons-material/Person';
 import MarkdownRenderer from '../Markdown/MarkdownRenderer';
 import ThinkingBlock from '../Markdown/ThinkingBlock';
@@ -50,7 +50,7 @@ export default function MessageBubble({
     >
       {!isUser && (
         <Box sx={{ flexShrink: 0, mt: 0.5 }}>
-          <SmartToyIcon fontSize="small" color="primary" />
+          <AndroidIcon fontSize="small" color="primary" />
         </Box>
       )}
       <Box sx={{ maxWidth: '100%', minWidth: 0, flex: !isUser ? 1 : 'none', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
