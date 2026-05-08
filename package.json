@@ -2,13 +2,25 @@
   "name": "deepseek-chat-web",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["client", "server"],
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w client",
-    "start": "npm run start -w server"
+    "start": "npm run start -w server",
+    "lint": "eslint client/src server/src",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
-    "concurrently": "^8"
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.59.1",
+    "@vitest/coverage-v8": "^4.1.5",
+    "concurrently": "^8",
+    "eslint": "^10.3.0",
+    "vitest": "^4.1.5"
   }
 }

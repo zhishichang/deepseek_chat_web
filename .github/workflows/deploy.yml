@@ -1,4 +1,4 @@
-name: Build & Deploy
+name: CI/CD
 
 on:
   push:
@@ -7,10 +7,51 @@ on:
     branches: [main]
 
 jobs:
-  # ---- Job 1: 构建验证 ----
-  # 每次 push 或 PR 都会运行，确保代码能正常构建
+  # ---- Job 1: 代码质量检查 + 测试 ----
+  # 每次 push 或 PR 都会运行，失败则拦截后续流程
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            e2e/test-results/
+            playwright-report/
+          retention-days: 3
+
+  # ---- Job 2: 构建验证 ----
+  # lint-and-test 通过后才运行
   build:
     name: Build
+    needs: lint-and-test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -28,7 +69,6 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      # 上传构建产物，供 deploy job 使用
       - name: Upload build artifact
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: actions/upload-artifact@v4
@@ -37,8 +77,8 @@ jobs:
           path: client/dist/
           retention-days: 1
 
-  # ---- Job 2: 部署到服务器 ----
-  # 仅在 push 到 main 时运行，PR 不会触发部署
+  # ---- Job 3: 部署到服务器 ----
+  # 仅在 push 到 main 且 build 通过后运行
   deploy:
     name: Deploy
     needs: build
