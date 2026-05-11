@@ -87,9 +87,11 @@ deepseek_chat_web/
 
 ## API 端点
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /api/health | 健康检查 |
-| POST | /api/chat | 聊天补全（SSE 流式） |
-| GET | /api/models | 获取可用模型列表 |
-| POST | /api/count-tokens | 计算 Token 数量 |
+| 方法 | 路径              | 说明                 |
+| ---- | ----------------- | -------------------- |
+| GET  | /api/health       | 健康检查             |
+| POST | /api/chat         | 聊天补全（SSE 流式） |
+| GET  | /api/models       | 获取可用模型列表     |
+| POST | /api/count-tokens | 计算 Token 数量      |
+
+lsof -ti:3001 | xargs kill -9
